@@ -65,6 +65,8 @@ CREATE TABLE provider (
   own_source_url      TEXT,
   operator_country    TEXT,
   jurisdiction_source TEXT,        -- never inferred; NULL means not established
+  default_contract    TEXT,        -- which contract operator_country summarises
+  ownership_assessed  TEXT,        -- when ownership was last checked
   ultimate_parent     TEXT,        -- beneficial ownership, as published
   parent_country      TEXT,
   parent_listings     TEXT,        -- JSON array; '[]' = privately held, NULL = not established
@@ -130,7 +132,31 @@ CREATE TABLE provider_exposure (
   status      TEXT NOT NULL,       -- 'none-identified'|'possible'|'likely'|'applies'
   basis       TEXT NOT NULL,
   source      TEXT,
-  PRIMARY KEY (provider_id, regime)
+  contract    TEXT,                -- scopes the assessment; NULL = provider-wide
+  -- Keyed by contract as well as regime: one provider can have different
+  -- exposure under the same regime depending on which entity you contract with,
+  -- which is the whole reason contracts exist. NULL contract = provider-wide.
+  PRIMARY KEY (provider_id, regime, contract)
+);
+
+-- Contracting arrangements. Entity country and governing law answer different
+-- questions: the entity chain determines who can be compelled, governing law
+-- only decides disputes. Kept in separate columns so nothing merges them.
+CREATE TABLE contract (
+  provider_id      TEXT NOT NULL REFERENCES provider(id),
+  id               TEXT NOT NULL,
+  applies_regions  TEXT,             -- JSON array
+  applies_tiers    TEXT,
+  applies_surfaces TEXT,
+  applies_condition TEXT,
+  entity           TEXT NOT NULL,
+  entity_country   TEXT NOT NULL,
+  governing_law    TEXT,
+  venue            TEXT,
+  source           TEXT,
+  source_url       TEXT,
+  note             TEXT,
+  PRIMARY KEY (provider_id, id)
 );
 
 -- Dated jurisdictional observations, append-only in spirit. Narrative context

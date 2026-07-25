@@ -19,6 +19,104 @@
       "OPENAI_API_KEY"
     ]
   },
+  "jurisdiction": {
+    "operatorCountry": "US",
+    "contracts": [
+      {
+        "id": "eea-ch",
+        "appliesTo": {
+          "customerRegions": [
+            "eea",
+            "ch"
+          ]
+        },
+        "entity": "OpenAI Ireland Ltd.",
+        "entityCountry": "IE",
+        "governingLaw": "IE",
+        "source": "operator-published",
+        "sourceUrl": "https://openai.com/policies/services-agreement/"
+      },
+      {
+        "id": "uk",
+        "appliesTo": {
+          "customerRegions": [
+            "gb"
+          ]
+        },
+        "entity": "OpenAI OpCo, LLC",
+        "entityCountry": "US",
+        "governingLaw": "IE",
+        "source": "operator-published",
+        "sourceUrl": "https://openai.com/policies/services-agreement/",
+        "note": "Asymmetric: the entity split is drawn at the EEA and Switzerland, while the governing-law clause names Ireland for the EEA, Switzerland and the UK. A UK customer therefore contracts with the US entity under Irish law."
+      },
+      {
+        "id": "public-sector",
+        "appliesTo": {
+          "condition": "Only where designated on an Order Form."
+        },
+        "entity": "OpenAI Public Sector, LLC",
+        "entityCountry": "US",
+        "source": "operator-published",
+        "sourceUrl": "https://openai.com/policies/services-agreement/"
+      },
+      {
+        "id": "default",
+        "appliesTo": {
+          "customerRegions": [
+            "*"
+          ]
+        },
+        "entity": "OpenAI OpCo, LLC",
+        "entityCountry": "US",
+        "governingLaw": "US-CA",
+        "venue": "California",
+        "source": "operator-published",
+        "sourceUrl": "https://openai.com/policies/services-agreement/"
+      }
+    ],
+    "defaultContract": "default",
+    "foreignDisclosureExposure": [
+      {
+        "regime": "us-cloud-act",
+        "status": "applies",
+        "contract": "default",
+        "basis": "The default contracting party is OpenAI OpCo, LLC, a US entity, under the laws of the State of California per the services agreement. A US-incorporated party is within reach of US legal process for data in its possession, custody or control, wherever that data is stored.",
+        "source": "https://openai.com/policies/services-agreement/"
+      },
+      {
+        "regime": "us-cloud-act",
+        "status": "possible",
+        "contract": "eea-ch",
+        "basis": "EEA and Swiss customers contract with OpenAI Ireland Ltd. under Irish law, so the reach question turns on whether a US entity in the same group has control over that data. No operator page expressly states the ownership relationship between OpenAI Ireland Ltd., OpenAI OpCo, LLC and OpenAI Group PBC, so the chain is not asserted here. Recorded as possible on the published facts alone: an Irish contracting entity operating the same service under the same brand as a US entity.",
+        "source": "https://openai.com/policies/services-agreement/"
+      }
+    ],
+    "source": "operator-published",
+    "sourceUrl": "https://openai.com/policies/services-agreement/",
+    "ownership": {
+      "ultimateParent": "OpenAI Group PBC",
+      "parentCountry": "US",
+      "listings": [],
+      "source": "operator-published",
+      "sourceUrl": "https://openai.com/index/built-to-benefit-everyone/",
+      "assessedAt": "2026-07-25"
+    },
+    "notes": [
+      {
+        "date": "2026-07-25",
+        "topic": "ownership",
+        "note": "OpenAI Group PBC and its control by the nonprofit OpenAI Foundation are described on OpenAI's own structure pages, but no operator page expressly states that the contracting entity OpenAI OpCo, LLC is a subsidiary of it. The parent is recorded as structurally described rather than expressly asserted, and the exposure basis for the EEA contract does not rely on the link.",
+        "source": "https://openai.com/index/built-to-benefit-everyone/"
+      },
+      {
+        "date": "2026-07-25",
+        "topic": "market-entry",
+        "note": "No public listing as at this date. A confidential draft registration statement was reported filed on 8 June 2026, so the empty listings array is a point-in-time fact and should be re-checked rather than assumed to hold.",
+        "source": "https://openai.com/policies/services-agreement/"
+      }
+    ]
+  },
   "probe": {
     "listModels": "GET /models",
     "browserDirect": true

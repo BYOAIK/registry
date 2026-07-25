@@ -111,16 +111,18 @@ def build() -> sqlite3.Connection:
         con.execute(
             "INSERT INTO provider(id, source, name, extends, credential_kind, credential_scheme,"
             " credential_header, browser_direct, operator_country, jurisdiction_source,"
+            " default_contract, ownership_assessed,"
             " ultimate_parent, parent_country, parent_listings,"
             " credential_hints, credential_env, serving_regions, probe_list_models,"
             " probe_responses_api, probe_browser_note, probe_quirks, verified_notes,"
             " jurisdiction_source_url, own_source, own_source_url,"
             " verified_date, verified_method)"
-            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (d["id"], "descriptor", d.get("name"), d.get("extends"), cred["kind"], cred.get("scheme"),
              cred.get("header"),
              None if probe.get("browserDirect") is None else int(probe["browserDirect"]),
              juris.get("operatorCountry"), juris.get("source"),
+             juris.get("defaultContract"), own.get("assessedAt"),
              own.get("ultimateParent"), own.get("parentCountry"),
              j("listings", own),
              j("hints", cred), j("env", cred), j("servingRegions", juris),
@@ -134,10 +136,24 @@ def build() -> sqlite3.Connection:
                         " source) VALUES (?,?,?,?,?,?)",
                         (d["id"], n["date"], n["topic"], n.get("regime"), n["note"],
                          n.get("source")))
+        for c in juris.get("contracts") or []:
+            ap = c.get("appliesTo") or {}
+            con.execute("INSERT INTO contract(provider_id, id, applies_regions, applies_tiers,"
+                        " applies_surfaces, applies_condition, entity, entity_country,"
+                        " governing_law, venue, source, source_url, note)"
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (d["id"], c["id"],
+                         json.dumps(ap["customerRegions"]) if "customerRegions" in ap else None,
+                         json.dumps(ap["tiers"]) if "tiers" in ap else None,
+                         json.dumps(ap["surfaces"]) if "surfaces" in ap else None,
+                         ap.get("condition"),
+                         c["entity"], c["entityCountry"], c.get("governingLaw"), c.get("venue"),
+                         c.get("source"), c.get("sourceUrl"), c.get("note")))
         for ex in juris.get("foreignDisclosureExposure") or []:
-            con.execute("INSERT INTO provider_exposure(provider_id, regime, status, basis, source)"
-                        " VALUES (?,?,?,?,?)",
-                        (d["id"], ex["regime"], ex["status"], ex["basis"], ex.get("source")))
+            con.execute("INSERT INTO provider_exposure(provider_id, regime, status, basis, source,"
+                        " contract) VALUES (?,?,?,?,?,?)",
+                        (d["id"], ex["regime"], ex["status"], ex["basis"], ex.get("source"),
+                         ex.get("contract")))
 
         for s in d["surfaces"]:
             con.execute("INSERT INTO surface(provider_id, id, label, url, region) VALUES (?,?,?,?,?)",
@@ -310,11 +326,32 @@ def export_descriptor(con: sqlite3.Connection, pid: str) -> dict:
 
     juris = {}
     if p["operator_country"]: juris["operatorCountry"] = p["operator_country"]
+    contracts = []
+    for (cid, regs, tiers, surfs, cond, ent, ec, law, ven, csrc, curl, cnote) in con.execute(
+            "SELECT id, applies_regions, applies_tiers, applies_surfaces, applies_condition,"
+            " entity, entity_country, governing_law, venue, source, source_url, note"
+            " FROM contract WHERE provider_id=? ORDER BY rowid", (pid,)):
+        c = {"id": cid}
+        ap = {}
+        if regs is not None: ap["customerRegions"] = jl(regs)
+        if tiers is not None: ap["tiers"] = jl(tiers)
+        if surfs is not None: ap["surfaces"] = jl(surfs)
+        if cond: ap["condition"] = cond
+        if ap: c["appliesTo"] = ap
+        c["entity"] = ent
+        c["entityCountry"] = ec
+        for k, v in (("governingLaw", law), ("venue", ven), ("source", csrc),
+                     ("sourceUrl", curl), ("note", cnote)):
+            if v: c[k] = v
+        contracts.append(c)
+    if contracts: juris["contracts"] = contracts
+    if p["default_contract"]: juris["defaultContract"] = p["default_contract"]
     if p["serving_regions"] is not None: juris["servingRegions"] = jl(p["serving_regions"])
     exposure = [ {k: v for k, v in
-                  (("regime", reg), ("status", st), ("basis", ba), ("source", so)) if v is not None}
-                 for reg, st, ba, so in con.execute(
-                     "SELECT regime, status, basis, source FROM provider_exposure"
+                  (("regime", reg), ("status", st), ("basis", ba), ("source", so),
+                   ("contract", ct)) if v is not None}
+                 for reg, st, ba, so, ct in con.execute(
+                     "SELECT regime, status, basis, source, contract FROM provider_exposure"
                      " WHERE provider_id=? ORDER BY rowid", (pid,))]
     if exposure: juris["foreignDisclosureExposure"] = exposure
     if p["jurisdiction_source"]: juris["source"] = p["jurisdiction_source"]
@@ -325,6 +362,7 @@ def export_descriptor(con: sqlite3.Connection, pid: str) -> dict:
     if p["parent_listings"] is not None: own["listings"] = jl(p["parent_listings"])
     if p["own_source"]: own["source"] = p["own_source"]
     if p["own_source_url"]: own["sourceUrl"] = p["own_source_url"]
+    if p["ownership_assessed"]: own["assessedAt"] = p["ownership_assessed"]
     if own: juris["ownership"] = own
     notes = [ {k: v for k, v in
                (("date", dt), ("topic", tp), ("regime", rg), ("note", nt), ("source", so))
