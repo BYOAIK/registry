@@ -257,9 +257,10 @@ def sovereignty(con: sqlite3.Connection, pid: str):
     The minimum across all recorded regime assessments, so the worst exposure
     wins, with two or more regimes at applies pinned to one star. Deliberately
     NOT a privacy rating: the registry does not measure retention, logging or
-    training use, so it does not score them. Unassessed providers are unrated
-    rather than defaulted to good: absence of assessment is not absence of
-    exposure.
+    training use, so it does not score them. Unassessed providers score one
+    star as a precautionary floor: unknown is treated as worst, never as safe,
+    and the assessed flag keeps a sourced one-star distinguishable from a
+    not-yet-examined one.
     """
     rows = con.execute("SELECT regime, status FROM provider_exposure"
                        " WHERE provider_id=?", (pid,)).fetchall()
@@ -408,7 +409,8 @@ def emit_html(con: sqlite3.Connection) -> None:
         expt = exp[0] if exp else "not assessed"
         sov = sovereignty(con, pid)
         if sov is None:
-            stars = '<span class="chip chip-na">not rated</span>'
+            stars = ('<span class="stars chip-na" title="unassessed, precautionary floor">'
+                     "&#9733;" + "&#9734;" * 4 + '</span> <span class="mut">unassessed</span>')
         else:
             cls = "chip-ok" if sov >= 5 else ("chip-warn" if sov >= 3 else "chip-no")
             stars = (f'<span class="stars {cls}" title="{sov} of 5">'
@@ -463,6 +465,7 @@ def emit_html(con: sqlite3.Connection) -> None:
 .stars {{ font-size: 0.85rem; letter-spacing: 0.06em; white-space: nowrap; }}
 .stars.chip-ok {{ color: var(--pass); }} .stars.chip-warn {{ color: var(--amber); }}
 .stars.chip-no {{ color: var(--fail); }}
+.stars.chip-na {{ color: var(--ink-3); }}
 .chip-doc {{ color: var(--ink-3); }}
 .regmeta {{ font-family: var(--mono); font-size: 0.78rem; color: var(--ink-2);
   margin-top: 0.75rem; }}
@@ -516,7 +519,9 @@ def emit_html(con: sqlite3.Connection) -> None:
       Regimes are weighted: cn-national-intelligence-law scores one star harsher at each tier,
       because it imposes an assistance duty without the judicial process the others operate
       through, so a provider where it applies is one star.
-      Not rated means not yet assessed, never assumed safe. It is not a privacy rating: the
+      Unassessed providers score one star as a precautionary floor: unknown is treated as
+      worst, never as safe, and the star turns from grey to a coloured, sourced rating the
+      moment an assessment lands. It is not a privacy rating: the
       registry does not measure retention, logging or training use, so it does not score them.
       CLOUD Act column: an attributed assessment, never legal advice. applies means a US operator;
       possible means published facts raise the question, stated in the descriptor's basis;
@@ -608,7 +613,8 @@ def emit(con: sqlite3.Connection) -> None:
             "surfaces": nsurf, "offerings": noff, "credential": kind,
             "browserDirect": None if bdirect is None else bool(bdirect),
             "jurisdiction": country, "verified": vdate, "method": vmethod,
-            "sovereignty": sovereignty(con, pid),
+            "sovereignty": sovereignty(con, pid) or 1,
+            "sovereigntyAssessed": sovereignty(con, pid) is not None,
             "sha256": hashlib.sha256(raw).hexdigest(),
         })
     outdir = os.path.join(PUBLISH, "v1", "registry")
