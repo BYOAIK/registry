@@ -492,6 +492,38 @@ def emit_html(con: sqlite3.Connection) -> None:
         fh.write(page)
 
 
+def emit_stats(con: sqlite3.Connection) -> None:
+    """Maintain the stat band on the homepage between its markers. Generated so
+    the numbers can never drift from the database that produced the registry."""
+    snap = con.execute("SELECT value FROM meta WHERE key='models.dev_snapshot'").fetchone()[0]
+    described = con.execute("SELECT COUNT(*) FROM provider WHERE source='descriptor'").fetchone()[0]
+    stubs = con.execute("SELECT COUNT(*) FROM provider WHERE source='models.dev'").fetchone()[0]
+    nmodels = con.execute("SELECT COUNT(*) FROM model").fetchone()[0]
+    noff = con.execute("SELECT COUNT(*) FROM offering").fetchone()[0]
+    nobs = con.execute("SELECT COUNT(*) FROM probe").fetchone()[0]
+    inner = f"""<!-- registry-stats -->
+    <a class="statband" href="/registry/" aria-label="Browse the provider registry">
+      <div class="statband-inner">
+        <div class="stat"><b>{described}</b><span>providers described</span></div>
+        <div class="stat"><b>{stubs}</b><span>more catalogued</span></div>
+        <div class="stat"><b>{nmodels:,}</b><span>models</span></div>
+        <div class="stat"><b>{noff:,}</b><span>offerings</span></div>
+        <div class="stat"><b>{nobs}</b><span>probe observations</span></div>
+        <span class="stat-note">browse the registry &rarr; &middot; snapshot {snap}</span>
+      </div>
+    </a>
+    <!-- /registry-stats -->"""
+    path = os.path.join(PUBLISH, "index.html")
+    if not os.path.exists(path):
+        return
+    import re
+    s = open(path, encoding="utf-8").read()
+    new = re.sub(r"<!-- registry-stats -->.*?<!-- /registry-stats -->", inner,
+                 s, count=1, flags=re.S)
+    if new != s:
+        open(path, "w", encoding="utf-8").write(new)
+
+
 def roundtrip(con: sqlite3.Connection) -> bool:
     """JSON -> db -> JSON must be equal for every descriptor-backed provider."""
     ok = True
@@ -574,6 +606,7 @@ if __name__ == "__main__":
     con = build()
     emit(con)
     emit_html(con)
+    emit_stats(con)
     rt = roundtrip(con)
     print("round-trip:", "16/16 descriptors regenerate identically from the db" if rt
           else "FAILED, db is not a complete representation")
