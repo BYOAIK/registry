@@ -239,6 +239,37 @@ def build() -> sqlite3.Connection:
     return con
 
 
+# Per-regime, per-status score. Regimes are not equally severe, and the
+# difference is stated rather than felt: the CLOUD Act operates through legal
+# process with judicial review, while cn-national-intelligence-law Article 7
+# imposes an affirmative duty to assist intelligence work without comparable
+# oversight, so it scores one star harsher at each tier.
+REGIME_SCORE = {
+    "applies":  {"cn-national-intelligence-law": 1, "default": 2},
+    "likely":   {"cn-national-intelligence-law": 2, "default": 3},
+    "possible": {"default": 4},
+    "none-identified": {"default": 5},
+}
+
+def sovereignty(con: sqlite3.Connection, pid: str):
+    """Derived sovereignty rating, 1-5 stars, or None when unassessed.
+
+    The minimum across all recorded regime assessments, so the worst exposure
+    wins, with two or more regimes at applies pinned to one star. Deliberately
+    NOT a privacy rating: the registry does not measure retention, logging or
+    training use, so it does not score them. Unassessed providers are unrated
+    rather than defaulted to good: absence of assessment is not absence of
+    exposure.
+    """
+    rows = con.execute("SELECT regime, status FROM provider_exposure"
+                       " WHERE provider_id=?", (pid,)).fetchall()
+    if not rows:
+        return None
+    if sum(1 for _, s in rows if s == "applies") >= 2:
+        return 1
+    return min(REGIME_SCORE[s].get(r, REGIME_SCORE[s]["default"]) for r, s in rows)
+
+
 def export_descriptor(con: sqlite3.Connection, pid: str) -> dict:
     """Regenerate a descriptor from the database. The round-trip test asserts
     this equals the source file, which is the proof the database is a complete
@@ -375,6 +406,13 @@ def emit_html(con: sqlite3.Connection) -> None:
         expc = {"applies": "chip-no", "possible": "chip-warn",
                 "none-identified": "chip-ok"}.get(exp[0] if exp else None, "chip-na")
         expt = exp[0] if exp else "not assessed"
+        sov = sovereignty(con, pid)
+        if sov is None:
+            stars = '<span class="chip chip-na">not rated</span>'
+        else:
+            cls = "chip-ok" if sov >= 5 else ("chip-warn" if sov >= 3 else "chip-no")
+            stars = (f'<span class="stars {cls}" title="{sov} of 5">'
+                     + "&#9733;" * sov + "&#9734;" * (5 - sov) + "</span>")
         parent_s = ""
         if parent:
             listed = ""
@@ -389,6 +427,7 @@ def emit_html(con: sqlite3.Connection) -> None:
 <td>{browser}</td>
 <td>{H.escape(country or '')}</td>
 <td class="wrapcell">{parent_s}</td>
+<td>{stars}</td>
 <td><span class="chip {expc}">{H.escape(expt)}</span></td>
 <td>{nsurf}{(' <span class=\'mut\'>(' + regions + ')</span>') if regions else ''}</td>
 <td>{method}{f' <span class="mut">{pobs} obs</span>' if pobs else ''}</td>
@@ -421,6 +460,9 @@ def emit_html(con: sqlite3.Connection) -> None:
 .chip-ok {{ color: var(--pass); }} .chip-no {{ color: var(--fail); }}
 .chip-warn {{ color: var(--amber); }} .chip-na {{ color: var(--ink-3); }}
 .chip-probe {{ color: var(--pass); border-color: var(--pass); }}
+.stars {{ font-size: 0.85rem; letter-spacing: 0.06em; white-space: nowrap; }}
+.stars.chip-ok {{ color: var(--pass); }} .stars.chip-warn {{ color: var(--amber); }}
+.stars.chip-no {{ color: var(--fail); }}
 .chip-doc {{ color: var(--ink-3); }}
 .regmeta {{ font-family: var(--mono); font-size: 0.78rem; color: var(--ink-2);
   margin-top: 0.75rem; }}
@@ -459,7 +501,7 @@ def emit_html(con: sqlite3.Connection) -> None:
       <table class="regtable">
         <thead><tr>
           <th>Provider</th><th>Credential</th><th>Browser</th><th>Operator</th>
-          <th>Ultimate parent</th><th>US CLOUD Act</th><th>Surfaces</th>
+          <th>Ultimate parent</th><th>Sovereignty</th><th>US CLOUD Act</th><th>Surfaces</th>
           <th>Verified</th><th></th>
         </tr></thead>
         <tbody>
@@ -468,6 +510,14 @@ def emit_html(con: sqlite3.Connection) -> None:
       </table>
     </div>
     <p class="regmeta" style="max-width: 68ch">
+      Sovereignty stars are derived from the recorded exposure assessments across all regimes,
+      worst assessment wins: five means every assessed regime came back none-identified,
+      possible is four, likely three, applies two, and applies to two or more regimes is one.
+      Regimes are weighted: cn-national-intelligence-law scores one star harsher at each tier,
+      because it imposes an assistance duty without the judicial process the others operate
+      through, so a provider where it applies is one star.
+      Not rated means not yet assessed, never assumed safe. It is not a privacy rating: the
+      registry does not measure retention, logging or training use, so it does not score them.
       CLOUD Act column: an attributed assessment, never legal advice. applies means a US operator;
       possible means published facts raise the question, stated in the descriptor's basis;
       none-identified means no US entity found in the published chain. Jurisdiction facts are
@@ -558,6 +608,7 @@ def emit(con: sqlite3.Connection) -> None:
             "surfaces": nsurf, "offerings": noff, "credential": kind,
             "browserDirect": None if bdirect is None else bool(bdirect),
             "jurisdiction": country, "verified": vdate, "method": vmethod,
+            "sovereignty": sovereignty(con, pid),
             "sha256": hashlib.sha256(raw).hexdigest(),
         })
     outdir = os.path.join(PUBLISH, "v1", "registry")

@@ -19,6 +19,25 @@
       "DEEPSEEK_API_KEY"
     ]
   },
+  "jurisdiction": {
+    "operatorCountry": "CN",
+    "foreignDisclosureExposure": [
+      {
+        "regime": "cn-national-intelligence-law",
+        "status": "applies",
+        "basis": "The operator is Hangzhou DeepSeek Artificial Intelligence Co., Ltd., with terms governed by the laws of the People's Republic of China and disputes venued at its Hangzhou registered office, per its own terms of use. A PRC-incorporated operator under PRC law falls squarely within the National Intelligence Law, whose Article 7 imposes a duty on organisations to support, assist and cooperate with national intelligence work, without the judicial-process gate the US and UK regimes operate through.",
+        "source": "https://cdn.deepseek.com/policies/en-US/deepseek-terms-of-use.html"
+      }
+    ],
+    "source": "operator-published",
+    "sourceUrl": "https://cdn.deepseek.com/policies/en-US/deepseek-terms-of-use.html",
+    "ownership": {
+      "ultimateParent": "Hangzhou DeepSeek Artificial Intelligence Co., Ltd.",
+      "parentCountry": "CN",
+      "source": "operator-published",
+      "sourceUrl": "https://cdn.deepseek.com/policies/en-US/deepseek-terms-of-use.html"
+    }
+  },
   "probe": {
     "listModels": "GET /models",
     "browserDirect": true,
