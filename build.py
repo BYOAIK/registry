@@ -558,13 +558,16 @@ def emit_stats(con: sqlite3.Connection) -> None:
     nobs = con.execute("SELECT COUNT(*) FROM probe").fetchone()[0]
     inner = f"""<!-- registry-stats -->
     <a class="statband" href="/registry/" aria-label="Browse the provider registry">
-      <div class="statband-inner">
+      <div class="statband-grid">
         <div class="stat"><b>{described}</b><span>providers described</span></div>
-        <div class="stat"><b>{stubs}</b><span>more catalogued</span></div>
+        <div class="stat stat-muted"><b>{stubs}</b><span>more catalogued</span></div>
         <div class="stat"><b>{nmodels:,}</b><span>models</span></div>
         <div class="stat"><b>{noff:,}</b><span>offerings</span></div>
-        <div class="stat"><b>{nobs}</b><span>probe observations</span></div>
-        <span class="stat-note">browse the registry &rarr; &middot; snapshot {snap}</span>
+        <div class="stat stat-accent"><b>{nobs}</b><span>probe observations</span></div>
+      </div>
+      <div class="statband-foot">
+        <span class="statband-go">Browse the registry →</span>
+        <span class="statband-snap">snapshot {snap}</span>
       </div>
     </a>
     <!-- /registry-stats -->"""
