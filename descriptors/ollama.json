@@ -1,0 +1,34 @@
+{
+  "$schema": "https://byoaik.org/v1/schema/descriptor.json",
+  "specVersion": "byoaik-1",
+  "id": "ollama",
+  "name": "Ollama (local)",
+  "extends": "models.dev:ollama",
+  "surfaces": [
+    {
+      "id": "local",
+      "label": "Local daemon",
+      "url": "http://localhost:11434/v1"
+    }
+  ],
+  "credential": {
+    "kind": "local",
+    "scheme": "none",
+    "hints": [],
+    "env": []
+  },
+  "probe": {
+    "listModels": "GET /models",
+    "browserDirect": false,
+    "browserNote": "A page served over HTTPS cannot call a plaintext localhost endpoint without the daemon permitting it.",
+    "quirks": [
+      "capabilities-declared-natively-via-api-show",
+      "streaming-tool-call-indices"
+    ]
+  },
+  "verified": {
+    "date": "2026-07-24",
+    "method": "documentation",
+    "notes": "Local runtime, no credential. Notable as the only runtime found so far that declares model capabilities natively, via an api/show capabilities array, which is the thing this specification otherwise has to establish by probing."
+  }
+}

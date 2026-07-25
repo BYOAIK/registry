@@ -1,0 +1,82 @@
+{
+  "$schema": "https://byoaik.org/v1/schema/descriptor.json",
+  "specVersion": "byoaik-1",
+  "id": "scaleway",
+  "name": "Scaleway",
+  "extends": "models.dev:scaleway",
+  "surfaces": [
+    {
+      "id": "default",
+      "label": "Generative APIs (default project)",
+      "url": "https://api.scaleway.ai/v1",
+      "region": "eu"
+    },
+    {
+      "id": "project",
+      "label": "Generative APIs (specific project)",
+      "url": "https://api.scaleway.ai/{projectId}/v1",
+      "region": "eu",
+      "vars": [
+        {
+          "name": "projectId",
+          "label": "Project ID",
+          "required": true,
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        }
+      ]
+    }
+  ],
+  "credential": {
+    "kind": "direct",
+    "scheme": "bearer",
+    "hints": [
+      "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    ],
+    "env": [
+      "SCALEWAY_API_KEY"
+    ]
+  },
+  "jurisdiction": {
+    "operatorCountry": "FR",
+    "servingRegions": [
+      "eu"
+    ],
+    "foreignDisclosureExposure": [
+      {
+        "regime": "us-cloud-act",
+        "status": "none-identified",
+        "basis": "French SAS, subsidiary of the privately held French iliad Group, serving from the EU. No published US parent, listing or serving region identified.",
+        "source": "https://www.scaleway.com/en/about-us/"
+      }
+    ],
+    "source": "operator-published",
+    "sourceUrl": "https://www.scaleway.com/en/docs/generative-apis/",
+    "ownership": {
+      "ultimateParent": "iliad Group (Scaleway SAS)",
+      "parentCountry": "FR",
+      "listings": [],
+      "source": "operator-published",
+      "sourceUrl": "https://www.scaleway.com/en/about-us/"
+    }
+  },
+  "models": {
+    "openai/gpt-oss-120b": {
+      "routingId": "gpt-oss-120b"
+    }
+  },
+  "probe": {
+    "listModels": "GET /models",
+    "responsesApi": false,
+    "quirks": [
+      "responses-endpoint-unsupported-per-model",
+      "context-limit-disclosed-in-error"
+    ],
+    "browserDirect": false,
+    "browserNote": "Sends no Access-Control-Allow-Origin header, so a browser-based app cannot call the endpoint directly and needs its own backend or proxy route."
+  },
+  "verified": {
+    "date": "2026-07-24",
+    "method": "probed",
+    "notes": "Probed against the project-scoped surface. 18 models visible to one key. The default URL serves only the default project; any other requires the project identifier in the path, which is why the surface is templated rather than selected. /v1/responses returned 422 ROUTE NOT SUPPORTED, scoped to the model, so the newer endpoint is not universal even within one provider. Model identifiers are bare and lowercase, where the same models carry vendor-prefixed names elsewhere. An impossible max_tokens disclosed the real limit in the error text."
+  }
+}

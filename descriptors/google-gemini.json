@@ -1,0 +1,36 @@
+{
+  "$schema": "https://byoaik.org/v1/schema/descriptor.json",
+  "specVersion": "byoaik-1",
+  "id": "google-gemini",
+  "name": "Google Gemini",
+  "extends": "models.dev:google",
+  "surfaces": [
+    {
+      "id": "default",
+      "label": "Default",
+      "url": "https://generativelanguage.googleapis.com/v1beta"
+    }
+  ],
+  "credential": {
+    "kind": "direct",
+    "scheme": "header",
+    "header": "x-goog-api-key",
+    "hints": [],
+    "env": [
+      "GEMINI_API_KEY",
+      "GOOGLE_GENERATIVE_AI_API_KEY"
+    ]
+  },
+  "probe": {
+    "listModels": "GET /models",
+    "browserDirect": true,
+    "quirks": [
+      "not-openai-shaped"
+    ]
+  },
+  "verified": {
+    "date": "2026-07-24",
+    "method": "documentation",
+    "notes": "Endpoint reachability and browser CORS behaviour checked on 2026-07-24 with an unauthenticated request: the host and path answered with the expected auth challenge. Capabilities have NOT been probed with a real key, so nothing here asserts what any model on this provider can actually do. Model-level facts come from models.dev via `extends`. Jurisdiction is deliberately absent rather than guessed."
+  }
+}

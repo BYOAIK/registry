@@ -1,0 +1,111 @@
+{
+  "$schema": "https://byoaik.org/v1/schema/descriptor.json",
+  "specVersion": "byoaik-1",
+  "id": "nebius",
+  "name": "Nebius",
+  "extends": "models.dev:nebius",
+  "surfaces": [
+    {
+      "id": "token-factory-eu",
+      "label": "Token Factory (EU, Finland)",
+      "url": "https://api.tokenfactory.nebius.com/v1",
+      "region": "eu-north1"
+    },
+    {
+      "id": "token-factory-us",
+      "label": "Token Factory (US Central)",
+      "url": "https://api.tokenfactory.us-central1.nebius.com/v1",
+      "region": "us-central1"
+    },
+    {
+      "id": "token-factory-uk",
+      "label": "Token Factory (UK)",
+      "url": "https://api.tokenfactory.uk-south1.nebius.com/v1",
+      "region": "uk-south1"
+    },
+    {
+      "id": "studio",
+      "label": "AI Studio",
+      "url": "https://api.studio.nebius.com/v1"
+    }
+  ],
+  "credential": {
+    "kind": "direct",
+    "scheme": "bearer",
+    "hints": [],
+    "env": [
+      "NEBIUS_API_KEY"
+    ]
+  },
+  "jurisdiction": {
+    "operatorCountry": "NL",
+    "servingRegions": [
+      "eu",
+      "uk",
+      "us"
+    ],
+    "foreignDisclosureExposure": [
+      {
+        "regime": "us-cloud-act",
+        "status": "possible",
+        "basis": "Direction of ownership matters, and it runs in Nebius's favour: the group tops out in a Dutch parent, and the US operation is a daughter of that parent. This is the inversion of the US-parent-EU-subsidiary shape the CLOUD Act was written for. An order on the US daughter reaches what the daughter possesses or controls, which covers data sent to us-central1 but not, in the ordinary case, the parent's EU infrastructure. The residual question for the EU and UK surfaces attaches to the parent itself: Nebius Group N.V. is listed on Nasdaq (NBIS), and whether a US listing plus US business presence subjects a Dutch parent to US jurisdiction for data-disclosure purposes is contested. Also unpublished either way: whether group administration or staff access crosses the entity boundary, which would blur the control analysis regardless of corporate structure. Status stays possible for the EU surfaces on those two open points; exposure for us-central1 itself is not in dispute, since the operating entity there possesses that data.",
+        "source": "https://nebius.com/company"
+      }
+    ],
+    "source": "operator-published",
+    "sourceUrl": "https://nebius.com/services/token-factory",
+    "ownership": {
+      "ultimateParent": "Nebius Group N.V.",
+      "parentCountry": "NL",
+      "listings": [
+        "NASDAQ: NBIS"
+      ],
+      "source": "operator-published",
+      "sourceUrl": "https://nebius.com/company"
+    },
+    "notes": [
+      {
+        "date": "2026-07-24",
+        "topic": "market-entry",
+        "note": "The parent entity itself is the US-listed one: Nebius Group N.V. is listed on Nasdaq as NBIS and describes itself as based in Amsterdam, listed on Nasdaq, operating worldwide. The US market entry is therefore a parent-level fact, not something confined to a daughter company, which is what keeps the CLOUD Act question attached to the parent.",
+        "source": "https://nebius.com/company"
+      },
+      {
+        "date": "2026-07-24",
+        "topic": "serving-footprint",
+        "note": "The group operates a US serving region directly reachable by customer keys: us-central1, measured by probe. Ownership of that operation tops out in the Dutch parent, the inversion of the US-parent shape, which is why exposure for the EU surfaces rests on parent-level theories rather than on the daughter.",
+        "source": "probed 2026-07-24"
+      }
+    ]
+  },
+  "models": {
+    "openai/gpt-oss-120b": {
+      "routingId": "openai/gpt-oss-120b",
+      "alternates": [
+        {
+          "routingId": "openai/gpt-oss-120b-fast",
+          "note": "separate deployment of the same weights"
+        }
+      ],
+      "surfaces": [
+        "token-factory-eu",
+        "token-factory-uk",
+        "token-factory-us"
+      ]
+    }
+  },
+  "probe": {
+    "listModels": "GET /models",
+    "responsesApi": true,
+    "quirks": [
+      "tool-choice-varies-by-model",
+      "max-tokens-silently-clamped"
+    ],
+    "browserDirect": true
+  },
+  "verified": {
+    "date": "2026-07-24",
+    "method": "probed",
+    "notes": "Probed against all three Token Factory surfaces with one key on 2026-07-24. Gardens differ per surface: 26 models on eu-north1, 24 on us-central1, 19 on uk-south1, with UK a strict subset of EU. Listing matched serving in the case tested: a model listed on EU and UK answered 200 on both and returned 404 model-does-not-exist on US, so GET /models is trustworthy per surface. Region is encoded in the endpoint hostname and the surface is the residency boundary. The console shows per-model region chips the API does not expose: GET /models returns only id, created, object and owned_by, so residency semantics are not machine-readable from the wire. Earlier findings stand: tool calling varies per model on one surface with one key, and an impossible max_tokens returns 200 rather than disclosing a limit."
+  }
+}

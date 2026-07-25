@@ -1,0 +1,34 @@
+{
+  "$schema": "https://byoaik.org/v1/schema/descriptor.json",
+  "specVersion": "byoaik-1",
+  "id": "alibaba",
+  "name": "Alibaba Cloud (DashScope)",
+  "extends": "models.dev:alibaba",
+  "surfaces": [
+    {
+      "id": "default",
+      "label": "Default",
+      "url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    }
+  ],
+  "credential": {
+    "kind": "direct",
+    "scheme": "bearer",
+    "hints": [],
+    "env": [
+      "DASHSCOPE_API_KEY"
+    ]
+  },
+  "probe": {
+    "listModels": "GET /models",
+    "browserDirect": true,
+    "quirks": [
+      "separate-cn-and-intl-endpoints"
+    ]
+  },
+  "verified": {
+    "date": "2026-07-24",
+    "method": "documentation",
+    "notes": "Endpoint reachability and browser CORS behaviour checked on 2026-07-24 with an unauthenticated request: the host and path answered with the expected auth challenge. Capabilities have NOT been probed with a real key, so nothing here asserts what any model on this provider can actually do. Model-level facts come from models.dev via `extends`. Jurisdiction is deliberately absent rather than guessed."
+  }
+}

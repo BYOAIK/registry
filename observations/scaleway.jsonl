@@ -1,0 +1,27 @@
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "*", "capability": "models.visible", "value": "18"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "gpt-oss-120b", "capability": "tool_choice.required", "value": "supported", "detail": "tool_calls populated"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "gpt-oss-120b", "capability": "tool_choice.auto", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "gpt-oss-120b", "capability": "tool_choice.none", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "gpt-oss-120b", "capability": "streaming", "value": "supported", "detail": "7 SSE frames"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "gpt-oss-120b", "capability": "structured_output", "value": "supported", "detail": "valid JSON at max_tokens 80 and 400"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "gpt-oss-120b", "capability": "context.disclosed", "value": "32768", "detail": "impossible max_tokens rejected with the real limit named in the error text"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "gpt-oss-120b", "capability": "responses_api", "value": "unsupported", "detail": "422 ROUTE NOT SUPPORTED, scoped per model"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "bge-multilingual-gemma2", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "devstral-2-123b-instruct-2512", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "gemma-3-27b-it", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "gemma-4-26b-a4b-it", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "glm-5.2", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "gpt-oss-120b", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "holo2-30b-a3b", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "llama-3.3-70b-instruct", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "mistral-medium-3.5-128b", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "mistral-small-3.2-24b-instruct-2506", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "pixtral-12b-2409", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "qwen3-235b-a22b-instruct-2507", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "qwen3-coder-30b-a3b-instruct", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "qwen3-embedding-8b", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "qwen3.5-397b-a17b", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "qwen3.6-35b-a3b", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "voxtral-small-24b-2507", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "project", "routing_id": "whisper-large-v3", "capability": "listed", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "default", "routing_id": "*", "capability": "cors.browser_direct", "value": "unsupported", "detail": "no Access-Control-Allow-Origin header on the response"}

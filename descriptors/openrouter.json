@@ -1,0 +1,74 @@
+{
+  "$schema": "https://byoaik.org/v1/schema/descriptor.json",
+  "specVersion": "byoaik-1",
+  "id": "openrouter",
+  "name": "OpenRouter",
+  "extends": "models.dev:openrouter",
+  "surfaces": [
+    {
+      "id": "default",
+      "label": "API (global routing)",
+      "url": "https://openrouter.ai/api/v1"
+    }
+  ],
+  "credential": {
+    "kind": "direct",
+    "scheme": "bearer",
+    "hints": [
+      "^sk-or-v1-"
+    ],
+    "env": [
+      "OPENROUTER_API_KEY"
+    ]
+  },
+  "jurisdiction": {
+    "operatorCountry": "US",
+    "servingRegions": [],
+    "foreignDisclosureExposure": [
+      {
+        "regime": "us-cloud-act",
+        "status": "applies",
+        "basis": "OpenRouter, Inc. is a US operator located in New York with terms governed by New York law. A US-incorporated entity is within reach of US legal process for data in its possession or control, which includes prompts and completions transiting its routing layer regardless of which downstream provider performs the inference.",
+        "source": "https://openrouter.ai/terms"
+      }
+    ],
+    "source": "operator-published",
+    "sourceUrl": "https://openrouter.ai/terms",
+    "ownership": {
+      "ultimateParent": "OpenRouter, Inc.",
+      "parentCountry": "US",
+      "source": "operator-published",
+      "sourceUrl": "https://openrouter.ai/terms"
+    },
+    "notes": [
+      {
+        "date": "2026-07-24",
+        "topic": "serving-footprint",
+        "note": "Aggregator: requests are routed to downstream providers worldwide, and one listed model is many deployments. Measured for one model: 19 downstream deployments with three different context lengths and tool support absent at three of them. A capability probe against the aggregator therefore samples the routing distribution rather than measuring a fixed deployment, and traffic transits the US operator regardless of which downstream is chosen.",
+        "source": "https://openrouter.ai/api/v1/models/openai/gpt-oss-120b/endpoints, probed 2026-07-24"
+      }
+    ]
+  },
+  "models": {
+    "openai/gpt-oss-120b": {
+      "routingId": "openai/gpt-oss-120b",
+      "surfaces": [
+        "default"
+      ]
+    }
+  },
+  "probe": {
+    "listModels": "GET /models",
+    "responsesApi": true,
+    "browserDirect": true,
+    "quirks": [
+      "aggregator-routing-samples-a-distribution",
+      "downstream-varies-context-and-tools"
+    ]
+  },
+  "verified": {
+    "date": "2026-07-24",
+    "method": "probed",
+    "notes": "Probed with a live key on 2026-07-24. 345 models visible. Full capability probe on openai/gpt-oss-120b passed: tool_choice required, auto and none, streaming, structured output enforced, and the real context limit disclosed in the error text as 131072. POST /responses answered 200. The public per-model endpoints listing shows the same model served by 19 downstream deployments with context 128000 to 131072 and tools unsupported at three, so single-probe results here sample OpenRouter's routing rather than pin a deployment."
+  }
+}

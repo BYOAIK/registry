@@ -1,0 +1,9 @@
+{"observed_at": "2026-07-24", "surface": "default", "routing_id": "*", "capability": "models.visible", "value": "345"}
+{"observed_at": "2026-07-24", "surface": "default", "routing_id": "openai/gpt-oss-120b", "capability": "tool_choice.required", "value": "supported", "detail": "tool_calls populated"}
+{"observed_at": "2026-07-24", "surface": "default", "routing_id": "openai/gpt-oss-120b", "capability": "tool_choice.auto", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "default", "routing_id": "openai/gpt-oss-120b", "capability": "tool_choice.none", "value": "supported"}
+{"observed_at": "2026-07-24", "surface": "default", "routing_id": "openai/gpt-oss-120b", "capability": "streaming", "value": "supported", "detail": "8 SSE frames"}
+{"observed_at": "2026-07-24", "surface": "default", "routing_id": "openai/gpt-oss-120b", "capability": "structured_output", "value": "supported", "detail": "valid JSON returned"}
+{"observed_at": "2026-07-24", "surface": "default", "routing_id": "openai/gpt-oss-120b", "capability": "context.disclosed", "value": "131072", "detail": "impossible max_tokens rejected with the limit named"}
+{"observed_at": "2026-07-24", "surface": "default", "routing_id": "openai/gpt-oss-120b", "capability": "responses_api", "value": "supported", "detail": "POST /responses 200"}
+{"observed_at": "2026-07-24", "surface": "default", "routing_id": "openai/gpt-oss-120b", "capability": "downstream.deployments", "value": "19", "detail": "context 128000-131072; tools absent at SiliconFlow, DigitalOcean, Google; probe samples routing, not a fixed deployment"}

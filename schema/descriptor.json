@@ -1,0 +1,422 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://byoaik.org/v1/schema/descriptor.json",
+  "title": "BYOAIK provider descriptor",
+  "description": "byoaik-1. Describes how to reach one inference provider with a user's own key. Deliberately thin: it carries only what a model catalogue structurally cannot, and defers everything else to `extends`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "specVersion",
+    "id",
+    "surfaces",
+    "credential"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional pointer to this schema, so editors can validate and autocomplete a descriptor while it is being written."
+    },
+    "specVersion": {
+      "const": "byoaik-1",
+      "description": "Spec version. URL namespace /v1/ corresponds to byoaik-1."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Stable identifier for the provider. Never reused for a different operator."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable operator name."
+    },
+    "extends": {
+      "type": "string",
+      "pattern": "^models\\.dev:[a-z0-9][a-z0-9-]*$",
+      "description": "Advisory pointer to a models.dev provider for model-level facts. Advisory on purpose: a descriptor must remain usable if the referenced catalogue is unavailable or disagrees."
+    },
+    "surfaces": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Distinct API surfaces. A surface may differ by product, tenancy or geography; do not assume region.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "url"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "label": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "Base URL. May contain {placeholders}, each of which must be declared in `vars`."
+          },
+          "region": {
+            "type": "string",
+            "description": "Serving region, when the operator states one. Absent means unknown, never assume."
+          },
+          "vars": {
+            "type": "array",
+            "description": "Values the setup flow must collect before the URL can be constructed.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "required": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "pattern": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "credential": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "direct",
+            "oauth",
+            "local",
+            "scoped"
+          ],
+          "description": "direct: the user's own provider key. oauth: device flow. local: no credential. scoped: a capped, revocable key. `scoped` is reserved and not implemented."
+        },
+        "scheme": {
+          "enum": [
+            "bearer",
+            "header",
+            "query",
+            "sigv4",
+            "none"
+          ]
+        },
+        "header": {
+          "type": "string",
+          "description": "Header name when scheme is `header`."
+        },
+        "hints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Regexes that narrow which provider a pasted key belongs to. A hint is never authoritative: most providers issue opaque keys, so the probe decides."
+        },
+        "env": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Conventional environment variable names."
+        }
+      }
+    },
+    "jurisdiction": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What the operator has published about where it is established and where it serves from. Reported, never inferred. A descriptor that guesses here is worse than one that says nothing.",
+      "properties": {
+        "operatorCountry": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "servingRegions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "foreignDisclosureExposure": {
+          "type": "array",
+          "description": "Disclosure regimes the operator may be reachable by, each as an attributed assessment. Never a bare verdict: whether a regime reaches a given corporate structure is usually contested, so the entry records the facts that raise the question and a status, not legal advice.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "regime",
+              "status",
+              "basis"
+            ],
+            "properties": {
+              "regime": {
+                "enum": [
+                  "us-cloud-act",
+                  "us-fisa-702",
+                  "uk-investigatory-powers-act",
+                  "cn-national-intelligence-law",
+                  "eu-e-evidence",
+                  "other"
+                ],
+                "description": "Extraterritorial disclosure or access regime. us-cloud-act: US CLOUD Act, compelled production regardless of storage location. us-fisa-702: US FISA Section 702, the regime Schrems II turned on. uk-investigatory-powers-act: UK IPA 2016. cn-national-intelligence-law: China NIL 2017, Article 7 cooperation duty. eu-e-evidence: EU production and preservation orders reaching providers offering services in the EU. other: not yet in this list; the basis must then name the regime precisely. Additions to this enum arrive by registry pull request."
+              },
+              "status": {
+                "enum": [
+                  "none-identified",
+                  "possible",
+                  "likely",
+                  "applies"
+                ]
+              },
+              "basis": {
+                "type": "string",
+                "description": "The published facts this status rests on."
+              },
+              "source": {
+                "type": "string"
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "regime": {
+                      "const": "other"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "basis": {
+                      "minLength": 30
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "source": {
+          "enum": [
+            "operator-published",
+            "operator-confirmed",
+            "unknown"
+          ],
+          "description": "Attribution for the claims above. Never omit."
+        },
+        "sourceUrl": {
+          "type": "string"
+        },
+        "ownership": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Ultimate beneficial ownership, as published. operatorCountry alone is not a jurisdictional answer: a locally incorporated operator with a foreign-listed parent answers to more than its own country.",
+          "properties": {
+            "ultimateParent": {
+              "type": "string"
+            },
+            "parentCountry": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            "listings": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Stock exchange listings of the parent, e.g. 'NASDAQ: NBIS'. Empty array means privately held as published; absent means not established."
+            },
+            "source": {
+              "enum": [
+                "operator-published",
+                "operator-confirmed",
+                "unknown"
+              ]
+            },
+            "sourceUrl": {
+              "type": "string"
+            }
+          }
+        },
+        "notes": {
+          "type": "array",
+          "description": "Dated, attributed observations about the jurisdictional picture, each typed by topic. Append-only in spirit: add a new note rather than rewriting an old one, so the record shows when something was learned as well as what.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "date",
+              "topic",
+              "note"
+            ],
+            "properties": {
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "topic": {
+                "enum": [
+                  "ownership",
+                  "market-entry",
+                  "restructuring",
+                  "serving-footprint",
+                  "sovereignty-commitment",
+                  "exposure"
+                ],
+                "description": "What the note is about. ownership: who ultimately controls the operator. market-entry: the operator or its parent entering a foreign market or listing. restructuring: corporate reorganisation. serving-footprint: where inference is operated from. sovereignty-commitment: published separation or residency guarantees. exposure: reasoning about a specific disclosure regime, which then requires `regime`."
+              },
+              "regime": {
+                "enum": [
+                  "us-cloud-act",
+                  "us-fisa-702",
+                  "uk-investigatory-powers-act",
+                  "cn-national-intelligence-law",
+                  "eu-e-evidence",
+                  "other"
+                ],
+                "description": "The disclosure regime an exposure note concerns."
+              },
+              "note": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "topic": {
+                      "const": "exposure"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "regime"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "models": {
+      "type": "object",
+      "description": "What this provider calls each model, keyed by canonical models.dev identifier in `lab/model` form. The key names who BUILT the model; this descriptor names who SERVES it and under what string. The two are routinely different: an open-weights model is typically offered by its lab and by dozens of independent providers, each with its own routing identifier. Keying on the canonical id is what makes that many-to-many expressible instead of collapsing lab and provider into one list.",
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9.-]*/[a-z0-9][a-z0-9.-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "routingId"
+        ],
+        "properties": {
+          "routingId": {
+            "type": "string",
+            "description": "The exact string this provider expects in the `model` field. Case sensitive, and frequently unlike the canonical id."
+          },
+          "alternates": {
+            "type": "array",
+            "description": "Other deployments of the same canonical model at this provider, such as a reduced-context or higher-throughput variant. Same weights, different serving characteristics, different identifier.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "routingId"
+              ],
+              "properties": {
+                "routingId": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                },
+                "surfaces": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "surfaces": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Surface ids this routing id was verified served on. Entitlement is per surface: the same key saw 26, 24 and 19 models on three surfaces of one provider. Absent means surface not established."
+          }
+        }
+      }
+    },
+    "probe": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "listModels": {
+          "type": "string",
+          "description": "Request that enumerates models this key may reach, e.g. `GET /models`."
+        },
+        "responsesApi": {
+          "type": "boolean",
+          "description": "Whether the newer response-shaped endpoint is served. Not universal."
+        },
+        "browserDirect": {
+          "type": "boolean",
+          "description": "Whether the endpoint can be called directly from a browser. False means it sends no permissive CORS header, or requires an explicit opt-in header, so a client-side app needs a different route. First-class for bring-your-own-key, where the caller is often a page rather than a server."
+        },
+        "browserNote": {
+          "type": "string",
+          "description": "What a browser client must do when browserDirect is false."
+        },
+        "quirks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Known deployment behaviours worth warning about. Hints for the probe, never a substitute for it."
+        }
+      }
+    },
+    "verified": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "When these facts were last checked against a live endpoint, and how.",
+      "properties": {
+        "date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "method": {
+          "enum": [
+            "probed",
+            "documentation",
+            "operator"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

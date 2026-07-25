@@ -1,0 +1,36 @@
+{
+  "$schema": "https://byoaik.org/v1/schema/descriptor.json",
+  "specVersion": "byoaik-1",
+  "id": "anthropic",
+  "name": "Anthropic",
+  "extends": "models.dev:anthropic",
+  "surfaces": [
+    {
+      "id": "default",
+      "label": "Default",
+      "url": "https://api.anthropic.com/v1"
+    }
+  ],
+  "credential": {
+    "kind": "direct",
+    "scheme": "header",
+    "header": "x-api-key",
+    "hints": [],
+    "env": [
+      "ANTHROPIC_API_KEY"
+    ]
+  },
+  "probe": {
+    "listModels": "GET /models",
+    "browserDirect": false,
+    "browserNote": "Sends no Access-Control-Allow-Origin header. A browser client must send the vendor's explicit opt-in header or route through its own backend.",
+    "quirks": [
+      "requires-anthropic-version-header"
+    ]
+  },
+  "verified": {
+    "date": "2026-07-24",
+    "method": "documentation",
+    "notes": "Endpoint reachability and browser CORS behaviour checked on 2026-07-24 with an unauthenticated request: the host and path answered with the expected auth challenge. Capabilities have NOT been probed with a real key, so nothing here asserts what any model on this provider can actually do. Model-level facts come from models.dev via `extends`. Jurisdiction is deliberately absent rather than guessed."
+  }
+}
