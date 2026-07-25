@@ -513,20 +513,14 @@ def emit_html(con: sqlite3.Connection) -> None:
       </table>
     </div>
     <p class="regmeta" style="max-width: 68ch">
-      Sovereignty stars are derived from the recorded exposure assessments across all regimes,
-      worst assessment wins: five means every assessed regime came back none-identified,
-      possible is four, likely three, applies two, and applies to two or more regimes is one.
-      Regimes are weighted: cn-national-intelligence-law scores one star harsher at each tier,
-      because it imposes an assistance duty without the judicial process the others operate
-      through, so a provider where it applies is one star.
-      Unassessed providers score one star as a precautionary floor: unknown is treated as
-      worst, never as safe, and the star turns from grey to a coloured, sourced rating the
-      moment an assessment lands. It is not a privacy rating: the
-      registry does not measure retention, logging or training use, so it does not score them.
-      CLOUD Act column: an attributed assessment, never legal advice. applies means a US operator;
-      possible means published facts raise the question, stated in the descriptor's basis;
-      none-identified means no US entity found in the published chain. Jurisdiction facts are
-      operator-published or measured, never inferred.
+      Sovereignty stars summarise the recorded legal-exposure assessments; the worst finding
+      wins. Five means nothing identified under any assessed regime; fewer stars mean a
+      disclosure duty is possible, likely or applies. Unassessed providers score one star:
+      unknown is treated as worst, never as safe. This is not a privacy rating — retention,
+      logging and training use are not measured. The CLOUD Act column is an attributed
+      assessment, never legal advice: applies means a US operator, possible means published
+      facts raise the question, none-identified means no US entity in the published chain.
+      Jurisdiction facts are operator-published or measured, never inferred.
     </p>
   </div>
 </main>
